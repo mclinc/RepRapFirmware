@@ -408,13 +408,11 @@ bool GCodes::HandleMcode(GCodeBuffer& gb, const StringRef& reply)
 		break;
 
 	case 3: // Spin spindle clockwise
-		if (gb.Seen('S'))
 		{
 			switch (machineType)
 			{
 			case MachineType::cnc:
 				{
-					const float rpm = gb.GetFValue();
 					const uint32_t slot = gb.Seen('P') ? gb.GetUIValue() : 0;
 					if (slot >= MaxSpindles)
 					{
@@ -423,18 +421,25 @@ bool GCodes::HandleMcode(GCodeBuffer& gb, const StringRef& reply)
 					}
 					else
 					{
-						platform.AccessSpindle(slot).SetRpm(rpm);
+						if (gb.Seen('S'))
+						{
+							const float rpm = gb.GetFValue();
+							platform.AccessSpindle(slot).SetRpm(rpm);
+						}
+						platform.AccessSpindle(slot).TurnOn();
 					}
 				}
 				break;
 
 			case MachineType::laser:
-				platform.SetLaserPwm(ConvertLaserPwm(gb.GetFValue()));
+				if (gb.Seen('S')) {
+					platform.SetLaserPwm(ConvertLaserPwm(gb.GetFValue()));
+				}
 				break;
 
 			default:
 #if SUPPORT_ROLAND
-				if (reprap.GetRoland()->Active())
+				if (gb.Seen('S') && reprap.GetRoland()->Active())
 				{
 					result = reprap.GetRoland()->ProcessSpindle(gb.GetFValue());
 				}
@@ -449,11 +454,9 @@ bool GCodes::HandleMcode(GCodeBuffer& gb, const StringRef& reply)
 		break;
 
 	case 4: // Spin spindle counter clockwise
-		if (gb.Seen('S'))
 		{
 			if (machineType == MachineType::cnc)
 			{
-				const float rpm = gb.GetFValue();
 				const uint32_t slot = gb.Seen('P') ? gb.GetUIValue() : 0;
 				if (slot >= MaxSpindles)
 				{
@@ -462,7 +465,13 @@ bool GCodes::HandleMcode(GCodeBuffer& gb, const StringRef& reply)
 				}
 				else
 				{
-					platform.AccessSpindle(slot).SetRpm(-rpm);
+					if (gb.Seen('S'))
+					{
+						const float rpm = gb.GetFValue();
+						platform.AccessSpindle(slot).SetRpm(-rpm);
+					}
+					platform.AccessSpindle(slot).TurnOn();
+
 				}
 			}
 			else
