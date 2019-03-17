@@ -13,11 +13,22 @@
 
 class Spindle
 {
+public:
+	struct Coefficents {
+		// y = ax^3 + bx^2 + cx + d
+		float a;
+		float b;
+		float c;
+		float d;
+	};
 private:
 	PwmPort spindleForwardPort, spindleReversePort;
 	bool inverted;
 	float currentRpm, configuredRpm, maxRpm;
 	int toolNumber;
+
+
+	Coefficents coefs = { 0.0, 0.0, 1.0, 0.0 };
 
 public:
 	Spindle() : inverted(false), currentRpm(0.0), configuredRpm(0.0), maxRpm(DefaultMaxSpindleRpm), toolNumber(-1) { }
@@ -30,6 +41,7 @@ public:
 
 	void SetPwmFrequency(float freq);
 	void SetMaxRpm(float max) { maxRpm = max; }
+	void SetCorrectionCoefs( Coefficents newCoefs ) { coefs = newCoefs; }
 
 	float GetCurrentRpm() const { return currentRpm; }
 	float GetRpm() const { return configuredRpm; }
@@ -37,6 +49,7 @@ public:
 
 	void TurnOn();
 	void TurnOff();
+
 };
 
 #endif

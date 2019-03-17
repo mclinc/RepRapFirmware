@@ -38,7 +38,11 @@ void Spindle::SetRpm(float rpm)
 
 void Spindle::TurnOn()
 {
-	const float pwm = abs(configuredRpm / maxRpm);
+	const float correctedRpm = coefs.a*powf(configuredRpm, 3.0)
+		+ coefs.b*powf(configuredRpm, 2.0)
+		+ coefs.c*configuredRpm + coefs.d;
+	float pwm = abs(correctedRpm / maxRpm);
+	pwm = pwm < 1.0 ? pwm : 1.0; // Just in case, need to think about this.
 	if (configuredRpm >= 0.0)
 	{
 		spindleReversePort.WriteAnalog(0.0);

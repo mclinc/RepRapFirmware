@@ -2769,6 +2769,14 @@ bool GCodes::HandleMcode(GCodeBuffer& gb, const StringRef& reply)
 			{
 				spindle.SetMaxRpm(max<float>(1.0, gb.GetFValue()));
 			}
+			{
+				Spindle::Coefficents coefs;
+				coefs.a = gb.Seen('A') ? gb.GetFValue() : 0.0;
+				coefs.b = gb.Seen('B') ? gb.GetFValue() : 0.0;
+				coefs.c = gb.Seen('C') ? gb.GetFValue() : 1.0;
+				coefs.d = gb.Seen('D') ? gb.GetFValue() : 0.0;
+				spindle.SetCorrectionCoefs(coefs);
+			}
 			if (gb.Seen('T'))
 			{
 				spindle.SetToolNumber(gb.GetIValue());
